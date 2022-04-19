@@ -1,0 +1,192 @@
+# SPDX-FileCopyrightText: 2022 Josef Andersson
+#
+# SPDX-License-Identifier: MIT
+
+---
+name: "ORT GitHub Action"
+description: "Analyze, Scan, Evaluate and Scan with the ORT - OSS Review Toolkit"
+inputs:
+  disable_shallow_clone:
+    description: |
+      If 'true', the full history of the project is cloned.
+      This option works only if VCS_TYPE is 'git'.
+      Check this option only if you know that it is required for your scan.
+      Will fail if not ORT_DISABLE_DOWNLOADER is set to false
+      (the default CI checkout is used otherwise).
+    required: false
+
+  fail_on_outdated_notice_file:
+    description: |
+      If 'true', the scan will be considered as failed if generated NOTICE file differs from the one in your repository.
+    default: "false"
+    required: false
+
+  notice_file:
+    description: |
+      Path to open source attribution document relative to the VCS root.
+      If empty 'FOSS_NOTICE' is used as default.
+    required: false
+
+  ort_allow_dynamic_versions:
+    description: |
+      Set to 'true' only if dynamic dependency versions are allowed (note version ranges specified for dependencies may cause unstable results).
+      This field applies only to package managers that support lock files, e.g. NPM.
+    required: false
+
+  ort_config_repo_url:
+    description: |
+      Url to a git repo containing configuration, defaults to the ORT CONFIG repo.
+    default: "https://github.com/oss-review-toolkit/ort-config.git"
+    required: false
+
+  ort_config_revision:
+    description: |
+      The Git revision of the ORT configuration repository to use.
+    required: false
+
+  ort_opts:
+    description: ""
+    required: false
+
+  ort_scripts_dir:
+    description: ""
+    default: "./scripts"
+    required: false
+
+  sw_name:
+    description: |
+      Name of project, product or component to be scanned.
+      By default the name of the repository is used as shown in its clone URL.
+    default: ${{ github.event.repository.name }}
+    required: false
+
+  sw_version:
+    description: |
+      Project version number or release name (use the version from package metadata, not VCS revision).By default, the Git short SHA is used.
+    default: ""
+    required: false
+
+  vcs_url:
+    description: |
+      VCS URL (clone URL) of project to scan.
+    default: ""
+    required: false
+
+  vcs_revision:
+    description: |
+      SHA1 or tag to scan (not branch names, because they can move).
+      If VCS_TYPE is 'git-repo', SHA1 must be unabbreviated, tag names must be prefixed with 'refs/tags/'.
+    required: false
+    default: $GITHUB_SHA
+
+  ort_revision:
+    description: |
+      The Git revision of ORT to use. Can be changed for testing a specific revision of ORT, for
+      example a branch before it is merged.
+      Pull requests can be used by either entering the SHA1 of the commit or by using the PR
+      reference, e.g. 'pull/<pr_id>/head'. Leave empty to use the pre-compiled ORT binary from the
+      Docker image.
+    required: false
+
+  ort_disable_advisor:
+    description: |
+      If 'true', ORT's advisor will not run (no security vulnerability checks).
+    default: "false"
+    required: false
+
+  ort_disable_downloader:
+    description: |
+      If 'true', ORT's downloader will not run (no project download by ort itself).
+      For example, GitLab/GitHub has per default already cloned your project, so you might not need to use ORT downloader.
+    default: "true"
+    required: false
+
+  ort_disable_evaluator:
+    description: |
+      If 'true', ORT's evaluator will not run (no policy checks).
+    default: "true"
+    required: false
+
+  ort_disable_scanner:
+    description: |
+      If 'true', ORT's scanner will not run (no copyright holders and licenses scan).
+    default: "true"
+    required: false
+
+  ort_log_level:
+    description: |
+      'debug' to see additional debug output to help tracking down errors.
+      'performance' for less logs.
+      'info' as default.
+    default: "info"
+    required: false
+
+  ort_use_dev_db:
+    description: |
+      If 'true', download/upload scanned results from/to development database."
+    default: "false"
+    required: false
+
+  ort_url:
+    default: https://github.com/oss-review-toolkit/ort.git
+    description: |
+      Where to get the ORT code base.
+    required: false
+
+  ort_scripts_repo:
+    description: |
+      The ORT CI Script repo (default), or maybe a dev fork etc.
+      This is used for initial dev.
+    default: janderssonse/ort-ci-action
+    required: false
+
+  ort_config_file:
+    description: |
+      Path to repository configuration file relative to the VCS root.
+      If empty '.ort.yml' is used as default.
+    default: ".ort.yml"
+    required: false
+
+  ort_cli_config_tmpl:
+    description: |
+      Path to a general ort configuration file in the repo.
+      Defaults to (ort-ci-action/ort-defaults/ort.conf).
+    default: "ort.conf.github.tmpl"
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout Ort Scripts
+      id: checkout-scripts
+      uses: actions/checkout@v3
+      with:
+        ref: improve_conf2
+        repository: ${{ inputs.ort_scripts_repo }}
+        path: ort-ci-action
+    - name: Use the ORT Action CI Image
+      id: ort-docker-ci
+      uses: docker://ghcr.io/janderssonse/ort-ci-action:latest
+      env:
+        ORT_SCRIPTS_DIR: "${{ github.workspace }}/ort-ci-action/src/scripts"
+        ORT_CLI_CONFIG_TMPL: "${{ github.workspace }}/ort-ci-action/templates/${{ inputs.ort_cli_config_tmpl }}"
+        DISABLE_SHALLOW_CLONE: ${{ inputs.disable_shallow_clone }}
+        FAIL_ON_OUTDATED_NOTICE_FILE: ${{ inputs.fail_on_outdated_notice_file }}
+        NOTICE_FILE: ${{ inputs.notice_file }}
+        ORT_ALLOW_DYNAMIC_VERSIONS: ${{ inputs.ort_allow_dynamic_versions }}
+        ORT_CONFIG_REPO_URL: ${{ inputs.ort_config_repo_url }}
+        ORT_CONFIG_REVISION: ${{ inputs.ort_config_revision }}
+        ORT_OPTS: ${{ inputs.ort_opts }}
+        SW_NAME: ${{ inputs.sw_name }}
+        SW_VERSION: ${{ inputs.sw_version }}
+        VCS_URL: ${{ inputs.vcs_url  }}
+        VCS_REVISION: ${{ inputs.vcs_revision }}
+        ORT_REVISION: ${{ inputs.ort_revision }}
+        ORT_DISABLE_ADVISOR: ${{ inputs.ort_disable_advisor }}
+        ORT_DISABLE_DOWNLOADER: ${{ inputs.ort_disable_downloader }}
+        ORT_DISABLE_EVALUATOR: ${{ inputs.ort_disable_evaluator }}
+        ORT_DISABLE_SCANNER: ${{ inputs.ort_disable_scanner }}
+        ORT_LOG_LEVEL: ${{ inputs.ort_log_level }}
+        ORT_USE_DEV_DB: ${{ inputs.ort_use_dev_db }}
+        ORT_URL: ${{ inputs.ort_url }}
+        ORT_CONFIG_FILE: ${{ inputs.ort_config_file }}

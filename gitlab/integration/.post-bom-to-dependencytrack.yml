@@ -1,0 +1,41 @@
+---
+variables:
+  DT_API_URL:
+    description: |
+      URL to the Dependency-Track API. i.e https://mydependencytrack.instance.org/api/v1.
+    value: $DEPENDENCY_TRACK_API_URL
+
+  DT_API_KEY:
+    description: |
+      KEY to the Dependency-Track API with CREATE_PROJECT_UPLOAD permission. Hint, see the default automation team).
+    value: $DEPENDENCY_TRACK_API_KEY
+
+  DT_PROJECT_NAME:
+    description: |
+      Defaults to namespace/projectname.
+    value: $CI_PROJECT_PATH
+
+  DT_PROJECT_VERSION:
+    description: |
+      The version, defaults to the short commit sha.
+    value: ""
+
+  DT_AUTOCREATE:
+    description: |
+      Should the project be autocreated if it doesn't exist ('true' or 'false').
+    value: "true"
+
+upload-bom-to-dependency-track:
+  stage: upload-bom
+  needs: ["ort-scan"]
+  image:
+    name: "$ORT_DOCKER_IMAGE"
+    entrypoint: [""]
+  tags:
+    - "$RUNNER_TAG"
+  script:
+    - >
+      curl -v -X POST "$DT_API_URL"/bom -H "X-API-Key: $DT_API_KEY"
+      -H 'Content-Type: multipart/form-data' -H 'accept: application/json' -F "projectName=$DT_PROJECT_NAME"
+      -F "projectVersion=$DT_PROJECT_VERSION" -F "autoCreate=$DT_AUTOCREATE"
+      -F "bom=@ort-results/bom.cyclonedx.xml"
