@@ -3,6 +3,8 @@ SPDX-FileCopyrightText: 2022 Josef Andersson
 
 SPDX-License-Identifier: MIT
 -->
+
+
 NOTE: GIT HISTORY WILL BE RESET WHEN PROJECT IS "good enough" for an initial commit and pass the experimental phase, so if you clone it, dont expect anything.
 
 == Nothing to see here yet, scratchpad and will be rewritten using scripts at ort-gitlab-ci.
