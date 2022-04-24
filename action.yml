@@ -135,9 +135,8 @@ inputs:
 
   ort_scripts_repo:
     description: |
-      The ORT CI Script repo (default), or maybe a dev fork etc.
-      This is used for initial dev.
-    default: janderssonse/ort-ci-action
+      The ORT CI base repo (default).
+    default: janderssonse/ort-ci-base
     required: false
 
   ort_config_file:
@@ -157,19 +156,18 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Checkout Ort Scripts
+    - name: Checkout Ort CI Base
       id: checkout-scripts
       uses: actions/checkout@v3
       with:
-        ref: improve_conf2
         repository: ${{ inputs.ort_scripts_repo }}
-        path: ort-ci-action
-    - name: Use the ORT Action CI Image
+        path: ort-ci-base
+    - name: Use the ORT CI Base Image
       id: ort-docker-ci
-      uses: docker://ghcr.io/janderssonse/ort-ci-action:latest
+      uses: docker://ghcr.io/janderssonse/ort-ci-base:latest
       env:
-        ORT_SCRIPTS_DIR: "${{ github.workspace }}/ort-ci-action/src/scripts"
-        ORT_CLI_CONFIG_TMPL: "${{ github.workspace }}/ort-ci-action/templates/${{ inputs.ort_cli_config_tmpl }}"
+        ORT_SCRIPTS_DIR: "${{ github.workspace }}/ort-ci-base/src/scripts"
+        ORT_CLI_CONFIG_TMPL: "${{ github.workspace }}/ort-ci-base/templates/${{ inputs.ort_cli_config_tmpl }}"
         DISABLE_SHALLOW_CLONE: ${{ inputs.disable_shallow_clone }}
         FAIL_ON_OUTDATED_NOTICE_FILE: ${{ inputs.fail_on_outdated_notice_file }}
         NOTICE_FILE: ${{ inputs.notice_file }}
