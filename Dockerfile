@@ -1,7 +1,6 @@
-ARG BASEIMAGE=ghcr.io/janderssonse/ort-ci
+ARG BASEIMAGE=ghcr.io/janderssonse/ort-ci-base
 FROM $BASEIMAGE
 
-COPY src/ort-ci-main.sh /opt/ort/ort-ci-main.sh
 COPY entrypoint.sh /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]

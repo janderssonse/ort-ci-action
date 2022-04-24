@@ -10,12 +10,10 @@ jobs:
     uses: ./.github/workflows/commitlint.yml
   license:
     uses: ./.github/workflows/license.yml
-  test:
-    uses: ./.github/workflows/test.yml
   lint:
     uses: ./.github/workflows/lint.yml
   repolint:
     uses: ./.github/workflows/repolint.yml
   build-image:
-    needs: [dco, commitlint, license, test]
+    needs: [dco, commitlint, license]
     uses: ./.github/workflows/ort-image-build.yml

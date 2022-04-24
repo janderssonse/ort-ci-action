@@ -5,6 +5,6 @@
 # SPDX-License-Identifier: MIT
 
 # shellcheck source=/dev/null
-. /opt/ort/ort-ci-main.sh
+. "${GITHUB_WORKSPACE}"/ort-ci-base/src/ort-ci-main.sh
 
 main
