@@ -15,5 +15,5 @@ jobs:
   repolint:
     uses: ./.github/workflows/repolint.yml
   build-image:
-    needs: [dco, commitlint, license, test]
+    needs: [dco, commitlint, license]
     uses: ./.github/workflows/ort-image-build.yml
