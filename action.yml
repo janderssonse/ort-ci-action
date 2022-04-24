@@ -164,7 +164,7 @@ runs:
         path: ort-ci-base
     - name: Use the ORT CI Base Image
       id: ort-docker-ci
-      uses: docker://ghcr.io/janderssonse/ort-ci-base:latest
+      uses: docker://ghcr.io/janderssonse/ort-ci-action:latest
       env:
         ORT_SCRIPTS_DIR: "${{ github.workspace }}/ort-ci-base/src/scripts"
         ORT_CLI_CONFIG_TMPL: "${{ github.workspace }}/ort-ci-base/templates/${{ inputs.ort_cli_config_tmpl }}"
