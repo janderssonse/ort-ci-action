@@ -92,7 +92,6 @@ Before commiting a PR, please have run with this linters to avoid red checks. If
 
 [Josef Andersson](https://github.com/janderssonse).
 
-
 ## Contributing
 
 ORT CI Base follows the [Contributor Covenant](http://contributor-covenant.org/version/1/3/0/) Code of Conduct.  
