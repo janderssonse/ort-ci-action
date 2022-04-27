@@ -6,9 +6,14 @@ SPDX-License-Identifier: CC0-1.0
 
 # ORT CI Action
 
-A GitHub Action for using the powerful [ORT (OSS Review Toolkit)](https://github.com/oss-review-toolkit/ort) to Analyze, Scan, Evaluate and Advise your code with ORT, with quite a lot of configuration options.
+A GitHub Action for using the powerful [ORT (OSS Review Toolkit)](https://github.com/oss-review-toolkit/ort) to Analyse, Scan, Evaluate and Advise your code with ORT, with quite a lot of configuration options.
 
-NOTE: TESTING THINGS; GIT HISTORY WILL BE RESET WHEN PROJECT IS "good enough" for an initial commit and pass the experimental phase, so if you clone it, dont expect to much, and dont use it "for real" yet, things will break
+NOTE: TESTING THINGS; GIT HISTORY WILL BE RESET WHEN PROJECT IS "good enough" for an initial commit and pass the experimental phase, so if you clone it, don't expect to much, and don't use it "for real" yet, things will break
+
+Related siblings projects are:
+
+- [ORT CI Base](https://github.com/janderssonse/ort-ci-base) - Base Scripts etc. for running ORT in CI
+- [ORT CI GitLab](https://github.com/janderssonse/ort-ci-gitlab) - A GitLab CI template for running ORT in CI
 
 ## Table of Contents
 
@@ -21,10 +26,10 @@ NOTE: TESTING THINGS; GIT HISTORY WILL BE RESET WHEN PROJECT IS "good enough" fo
 
 In the given example we are using a few other actions:
 
-* [`checkout`](https://github.com/actions/checkout) - will checkout the current repo and put in under '$GITHUB_WORKSPACE/project' (the default expected repolocation if nothing else configured).
+* [`checkout`](https://github.com/actions/checkout) - will checkout the current repo and put in under '$GITHUB_WORKSPACE/project' (the default expected repo location if nothing else configured).
 
 
-* [`upload-artifact`](https://github.com/actions/upload-artifact) - to make the analysed results becoma available after the CI pipeline has finished.
+* [`upload-artifact`](https://github.com/actions/upload-artifact) - to make the analysed results become available after the CI pipeline has finished.
 
 ### Analyse
 
@@ -101,7 +106,7 @@ Please also see the [Contributor Guide](docs/CONTRIBUTING.adoc)
 ## License
 
 
-The Action is using the ORT to run it's actions which is Apache Licensed and:
+The Action is using ORT to run it's actions which is Apache Licensed and:
 
 Copyright (C) 2020-2022 HERE Europe B.V.
 
