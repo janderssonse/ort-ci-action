@@ -101,9 +101,10 @@ Please also see the [Contributor Guide](docs/CONTRIBUTING.adoc)
 
 ## License
 
-The Action is using the ORT to run it's actions and that is
 
-Under the Apache License 2.0 - Copyright (C) 2020-2022 HERE Europe B.V.
+The Action is using the ORT to run it's actions which is Apache Licensed and:
+
+Copyright (C) 2020-2022 HERE Europe B.V.
 
 ORT CI ACTION itself is is under
 
