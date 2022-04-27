@@ -4,13 +4,11 @@ SPDX-FileCopyrightText: 2022 Josef Andersson
 SPDX-License-Identifier: CC0-1.0
 -->
 
-
-
-NOTE: STILL TESTING THINGS; GIT HISTORY WILL BE RESET WHEN PROJECT IS "good enough" for an initial commit and pass the experimental phase, so if you clone it, dont expect to much, and dont use it "for real" yet, things will break
-
 # ORT CI Action
 
 A GitHub Action for using the powerful [ORT (OSS Review Toolkit)](https://github.com/oss-review-toolkit/ort) to Analyze, Scan, Evaluate and Advise your code with ORT, with quite a lot of configuration options.
+
+NOTE: TESTING THINGS; GIT HISTORY WILL BE RESET WHEN PROJECT IS "good enough" for an initial commit and pass the experimental phase, so if you clone it, dont expect to much, and dont use it "for real" yet, things will break
 
 ## Table of Contents
 
@@ -26,7 +24,7 @@ In the given example we are using a few other actions:
 * [`checkout`](https://github.com/actions/checkout) - will checkout the current repo and put in under '$GITHUB_WORKSPACE/project' (the default expected repolocation if nothing else configured).
 
 
-* [`upload-artifact`](https://github.com/actions/upload-artifact) - to make the analysed results becoma available after the CI pipeline has finished. 
+* [`upload-artifact`](https://github.com/actions/upload-artifact) - to make the analysed results becoma available after the CI pipeline has finished.
 
 ### Analyse
 
@@ -75,20 +73,48 @@ At the bottom of the workflow summary page, there is a dedicated section for art
 
 <img src="https://user-images.githubusercontent.com/37870813/164996952-e1a6c353-fe52-4a43-a578-e9a9c3b1f861.png" width="700" height="300">
 
+## Development
+
+TO-DO
+
+### Project linters
+
+The project is using a few hygiene linters:
+
+- [MegaLinter](https://megalinter.github.io/latest/) - for shell, markdown etc check.
+- [Repolinter](https://github.com/todogroup/repolinter) - for overall repostructre.
+- [commitlint](https://github.com/conventional-changelog/commitlint) - for conventional commit check.
+- [REUSE Compliance Check](https://github.com/fsfe/reuse-action) - for reuse specification compliance.
+
+Before commiting a PR, please have run with this linters to avoid red checks. If forking on GitHub, you can adjust them to work for fork in the .github/workflow-files.
+
 ## Maintainers
 
 [Josef Andersson](https://github.com/janderssonse).
 
+
 ## Contributing
 
-ORT CI Action follows the [Contributor Covenant](http://contributor-covenant.org/version/1/3/0/) Code of Conduct.
+ORT CI Base follows the [Contributor Covenant](http://contributor-covenant.org/version/1/3/0/) Code of Conduct.  
+Please also see the [Contributor Guide](docs/CONTRIBUTING.adoc)
 
 
 ## License
 
+The Action is using the ORT to run it's actions and that is
+
+Under the Apache License 2.0 - Copyright (C) 2020-2022 HERE Europe B.V.
+
+ORT CI ACTION itself is is under
+
 [MIT](LICENSE)
 
-== Nothing to see here yet, scratchpad and will be rewritten using scripts at ort-gitlab-ci.
+See .reuse/dep5 and file headers for further information.
+Most "scrap" files, textfiles etc are under CC0-1.0, essentially Public Domain.
+
+## Credits
+
+Thanks to the [ORT (OSS Review Toolkit) Project](https://github.com/oss-review-toolkit/ort), for developing such a powerful tool. It fills a void in SCA-toolspace.
 
 ## F.A.Q
 

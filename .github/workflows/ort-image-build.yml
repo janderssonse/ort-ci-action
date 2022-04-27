@@ -1,13 +1,14 @@
 ---
-name: Build/Publish ort-ci-action image
-# Builds and base image from the ORT repo
-# Uses base image to build the CI image with Dockerfile from the ORT GitLab CI project
-# Uses ci image as a result for the action image
-#
+name: Build/Publish ORT CI Action image
+# 1) Builds base image from the ORT repo
+# 2) Builds base CI image with Dockerfile (file from the ORT GitLab CI project)
+# 3) Finally, builds the ORT CI Action image
+
 on: [workflow_call, workflow_dispatch] # yamllint disable-line rule:truthy
 
 env:
   REGISTRY: ghcr.io
+  IMAGE_NAME_BASE: ort-base
   IMAGE_NAME_CI: ort-ci-base
   IMAGE_NAME_ACTION: ort-ci-action
 
@@ -19,7 +20,7 @@ jobs:
       contents: read
       packages: write
 
-    if: github.ref_name == 'wip/refactor' || github.ref_name == 'main'
+    if: github.ref_name == 'feature/imagebuild' || github.ref_name == 'main'
     steps:
       - name: Checkout Actions repo
         uses: actions/checkout@v3
@@ -47,6 +48,53 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Build the ORT Base Image
+      - name: Extract metadata (tags, labels) for ort base image
+        id: ort_base_meta
+        uses: docker/metadata-action@v3
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BASE }}
+          flavor: |
+            latest=true
+          tags: |
+            type=raw,value={{branch}},priority=1,enable=${{ !startsWith(github.ref, 'refs/tags/v') }}
+            type=ref,event=tag,priority=2
+            type=raw,value=${{ env.IMAGE_NAME_BASE }}-{{branch}}-{{date 'YYYYMMDD'}}-{{sha}},priority=31,enable=${{ !startsWith(github.ref, 'refs/tags/v') }}
+            type=raw,value=${{ env.IMAGE_NAME_BASE }}-{{tag}}-{{date 'YYYYMMDD'}}-{{sha}},priority=32, enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+
+      - name: Build and push ort base image
+        uses: docker/build-push-action@v2
+        with:
+          context: ort/
+          push: true
+          tags: ${{ steps.ort_base_meta.outputs.tags }}
+          labels: ${{ steps.ort_base_meta.outputs.labels }}
+
+      # Build the ORT CI Base Image based on the Base Image
+      - name: Extract metadata (tags, labels) for ort ci image
+        id: ort_ci_meta
+        uses: docker/metadata-action@v3
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_CI }}
+          flavor: |
+            latest=true
+          tags: |
+            type=raw,value={{branch}},priority=1,enable=${{ !startsWith(github.ref, 'refs/tags/v') }}
+            type=ref,event=tag,priority=2
+            type=raw,value=${{ env.IMAGE_NAME_CI }}-{{branch}}-{{date 'YYYYMMDD'}}-{{sha}},priority=31,enable=${{ !startsWith(github.ref, 'refs/tags/v') }}
+            type=raw,value=${{ env.IMAGE_NAME_CI }}-{{tag}}-{{date 'YYYYMMDD'}}-{{sha}},priority=32, enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+
+      - name: Build and push ort ci image
+        uses: docker/build-push-action@v2
+        with:
+          context: https://github.com/janderssonse/ort-ci-base.git
+          file: /docker/Dockerfile.ci
+          push: true
+          tags: ${{ steps.ort_ci_meta.outputs.tags }}
+          labels: ${{ steps.ort_ci_meta.outputs.labels }}
+          build-args: |
+            ORT_DOCKER_IMAGE=${{ fromJSON(steps.ort_base_meta.outputs.json).tags[0] }}
 
       # Finally build the Action image
       - name: Extract metadata (tags, labels) for ort action image
@@ -79,4 +127,6 @@ jobs:
           tags: ${{ steps.ort_action_meta.outputs.tags }}
           labels: ${{ steps.ort_action_meta.outputs.labels }}
           build-args: |
-            BASEIMAGE=${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_CI }}
+            BASEIMAGE=${{ fromJSON(steps.ort_ci_meta.outputs.json).tags[0] }}
+
+#BASEIMAGE=${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_CI }}
