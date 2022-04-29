@@ -18,8 +18,8 @@ Related siblings projects are:
 ## Table of Contents
 
 - [Usage](#usage)
-- [Maintainers](#maintainers)
 - [Contributing](#contributing)
+- [Maintainers](#maintainers)
 - [License](#license)
 
 ## Usage
@@ -70,7 +70,7 @@ jobs:
             path: ./project/ort-results
 ```
 
-For further configuration options, see [action.yml](action.yml).
+For further configuration options, see [the variables configuration doc](https://github.com/janderssonse/ort-ci-base/blob/main/docs/variables.adoc) or, the [action.yml](action.yml) itself.
 
 ### Where can the results be found?
 
@@ -93,24 +93,22 @@ The project is using a few hygiene linters:
 
 Before commiting a PR, please have run with this linters to avoid red checks. If forking on GitHub, you can adjust them to work for fork in the .github/workflow-files.
 
+## Contributing
+
+ORT CI Action follows the [Contributor Covenant](http://contributor-covenant.org/version/1/3/0/) Code of Conduct.  
+Please also see the [Contributor Guide](docs/CONTRIBUTING.adoc)
+
 ## Maintainers
 
 [Josef Andersson](https://github.com/janderssonse).
 
-## Contributing
-
-ORT CI Base follows the [Contributor Covenant](http://contributor-covenant.org/version/1/3/0/) Code of Conduct.  
-Please also see the [Contributor Guide](docs/CONTRIBUTING.adoc)
-
-
 ## License
-
 
 The Action is using ORT to run it's actions which is Apache Licensed and:
 
 Copyright (C) 2020-2022 HERE Europe B.V.
 
-ORT CI ACTION itself is is under
+ORT CI Action itself is is under
 
 [MIT](LICENSE)
 

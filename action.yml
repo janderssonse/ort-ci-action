@@ -1,9 +1,9 @@
 # SPDX-FileCopyrightText: 2022 Josef Andersson
 #
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: CC0-1.0
 
 ---
-name: "ORT GitHub Action"
+name: "ORT CI GitHub Action"
 description: "Analyze, Scan, Evaluate and Scan with the ORT - OSS Review Toolkit"
 inputs:
   disable_shallow_clone:
@@ -42,56 +42,13 @@ inputs:
   ort_config_revision:
     description: |
       The Git revision of the ORT configuration repository to use.
-    required: false
-
-  ort_opts:
-    description: ""
-    required: false
-
-  ort_scripts_dir:
-    description: ""
-    default: "./scripts"
-    required: false
-
-  sw_name:
-    description: |
-      Name of project, product or component to be scanned.
-      By default the name of the repository is used as shown in its clone URL.
-    default: ${{ github.event.repository.name }}
-    required: false
-
-  sw_version:
-    description: |
-      Project version number or release name (use the version from package metadata, not VCS revision).By default, the Git short SHA is used.
-    default: ""
-    required: false
-
-  vcs_url:
-    description: |
-      VCS URL (clone URL) of project to scan.
-    default: ""
-    required: false
-
-  vcs_revision:
-    description: |
-      SHA1 or tag to scan (not branch names, because they can move).
-      If VCS_TYPE is 'git-repo', SHA1 must be unabbreviated, tag names must be prefixed with 'refs/tags/'.
-    required: false
-    default: $GITHUB_SHA
-
-  ort_revision:
-    description: |
-      The Git revision of ORT to use. Can be changed for testing a specific revision of ORT, for
-      example a branch before it is merged.
-      Pull requests can be used by either entering the SHA1 of the commit or by using the PR
-      reference, e.g. 'pull/<pr_id>/head'. Leave empty to use the pre-compiled ORT binary from the
-      Docker image.
+    default: "main"
     required: false
 
   ort_disable_advisor:
     description: |
       If 'true', ORT's advisor will not run (no security vulnerability checks).
-    default: "false"
+    default: "true"
     required: false
 
   ort_disable_downloader:
@@ -133,11 +90,11 @@ inputs:
       Where to get the ORT code base.
     required: false
 
-  ort_scripts_repo:
+  ort_docker_image:
+    default: $ORT_CI_DOCKER_IMAGE
     description: |
-      The ORT CI base repo (default).
-    default: janderssonse/ort-ci-base
-    required: false
+      The CI Docker ORT Image to use.
+    required: true
 
   ort_config_file:
     description: |
@@ -146,6 +103,60 @@ inputs:
     default: ".ort.yml"
     required: false
 
+  project_dir:
+    description: |
+      Path to actual cloned project folder in the CI-pipe. Defaults to 'project'.
+    default: "project"
+    required: false
+
+  vcs_path:
+    default: ""
+    description: |
+      Leave this field empty unless one of the following special cases applies.
+       project VCS_TYPE is git-repo - specify path to repo manifest file (e.g. olympia.xml, note VCS_URL must point to a manifest repository)
+       you require sparse checkout - specify repository sub-path to download and scan (e.g. projects/gradle/, note sparse checkout is
+       possible only for VCS_TYPE git, mercurial or subversion).
+    required: false
+
+  sw_name:
+    description: |
+      Name of project, product or component to be scanned.
+      By default the name of the repository is used as shown in its clone URL.
+    default: ${{ github.event.repository.name }}
+    required: false
+
+  sw_version:
+    description: |
+      Project version number or release name (use the version from package metadata, not VCS revision).By default, the Git short SHA is used.
+    default: ""
+    required: false
+
+  vcs_revision:
+    description: |
+      SHA1 or tag to scan (not branch names, because they can move).
+      If VCS_TYPE is 'git-repo', SHA1 must be unabbreviated, tag names must be prefixed with 'refs/tags/'.
+    required: false
+    default: $GITHUB_SHA
+
+  vcs_type:
+    description: |
+      Identifier of the project version control system (git, git-repo, mercurial or subversion). Only used if ORT_DISABLE_DOWNLOADER is set to false.
+    default: "git"
+    required: false
+
+  vcs_url:
+    description: |
+      VCS URL (clone URL) of project to scan.
+    default: ""
+    required: false
+
+  ort_ci_base_repo_uri:
+    description: |
+      URI to the ORT CI Base repo.
+      It contains the basic scripts for which different CI wrappers are built.
+    default: janderssonse/ort-ci-base
+    required: true
+
   ort_cli_config_tmpl:
     description: |
       Path to a general ort configuration file in the repo.
@@ -153,15 +164,22 @@ inputs:
     default: "ort.conf.github.tmpl"
     required: false
 
+  ort_opts:
+    description: |
+      Set general running options for ORT, for example xmx.
+    default: ""
+    required: false
+
 runs:
   using: "composite"
   steps:
-    - name: Checkout Ort CI Base
+    - name: Checkout ORT CI Base
       id: checkout-scripts
       uses: actions/checkout@v3
       with:
-        repository: ${{ inputs.ort_scripts_repo }}
+        repository: ${{ inputs.ort_ci_base_repo_uri }}
         path: ort-ci-base
+
     - name: Use the ORT CI Base Image
       id: ort-docker-ci
       uses: docker://ghcr.io/janderssonse/ort-ci-action:latest
@@ -177,9 +195,10 @@ runs:
         ORT_OPTS: ${{ inputs.ort_opts }}
         SW_NAME: ${{ inputs.sw_name }}
         SW_VERSION: ${{ inputs.sw_version }}
-        VCS_URL: ${{ inputs.vcs_url  }}
+        PROJECT_DIR: ${{ inputs.project_dir }}
+        VCS_PATH: ${{ inputs.vcs_path }}
+        VCS_URL: ${{ inputs.vcs_url }}
         VCS_REVISION: ${{ inputs.vcs_revision }}
-        ORT_REVISION: ${{ inputs.ort_revision }}
         ORT_DISABLE_ADVISOR: ${{ inputs.ort_disable_advisor }}
         ORT_DISABLE_DOWNLOADER: ${{ inputs.ort_disable_downloader }}
         ORT_DISABLE_EVALUATOR: ${{ inputs.ort_disable_evaluator }}
