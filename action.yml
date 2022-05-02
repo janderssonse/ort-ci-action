@@ -9,53 +9,61 @@ inputs:
   disable_shallow_clone:
     description: |
       If 'true', the full history of the project is cloned.
-      This option works only if VCS_TYPE is 'git'.
-      Check this option only if you know that it is required for your scan.
-      Will fail if not ORT_DISABLE_DOWNLOADER is set to false
-      (the default CI checkout is used otherwise).
+      Only works if VCS_TYPE is 'git' and ORT_DISABLE_DOWNLOADER set to false
+      Only use if know that it is required for your scan.
     required: false
 
   fail_on_outdated_notice_file:
     description: |
-      If 'true', the scan will be considered as failed if generated NOTICE file differs from the one in your repository.
-    default: "false"
+      If 'true', the scan will be considered as failed, if generated NOTICE file differs from the one in your repository.
     required: false
 
   notice_file:
     description: |
       Path to open source attribution document relative to the VCS root.
-      If empty 'FOSS_NOTICE' is used as default.
+      Defaults to 'FOSS_NOTICE'.
     required: false
 
   ort_allow_dynamic_versions:
     description: |
       Set to 'true' only if dynamic dependency versions are allowed (note version ranges specified for dependencies may cause unstable results).
-      This field applies only to package managers that support lock files, e.g. NPM.
+      Applies only to package managers that support lock files, e.g. NPM.
+    required: false
+
+  ort_config_file:
+    description: |
+      Path to repository configuration file relative to the VCS root.
+      Defaults to '.ort.yml'.
+    required: false
+
+  ort_cli_config_tmpl:
+    description: |
+      Path to a general ORT configuration file.
+      Defaults to the ort-ci-base repository (/templates/ort.conf.tmpl).
+    default: "ort.conf.github.tmpl"
     required: false
 
   ort_config_repo_url:
     description: |
-      Url to a git repo containing configuration, defaults to the ORT CONFIG repo.
-    default: "https://github.com/oss-review-toolkit/ort-config.git"
+      Url to a git repo containing configuration.
+      Defaults to 'https://github.com/oss-review-toolkit/ort-config.git'.
     required: false
 
   ort_config_revision:
     description: |
-      The Git revision of the ORT configuration repository to use.
-    default: "main"
+      The Git revision of the ORT_CONFIG_REPO_URL repository to use.
+      Defaults to 'main'.
     required: false
 
   ort_disable_advisor:
     description: |
       If 'true', ORT's advisor will not run (no security vulnerability checks).
-    default: "true"
     required: false
 
   ort_disable_downloader:
     description: |
-      If 'true', ORT's downloader will not run (no project download by ort itself).
-      For example, GitLab/GitHub has per default already cloned your project, so you might not need to use ORT downloader.
-    default: "true"
+      If 'true', ORT's downloader will not run (no project download by ORT itself).
+      Depending on CI setup, GitLab/GitHub has per default already cloned your project, so you might not need/want to use ORT downloader.
     required: false
 
   ort_disable_evaluator:
@@ -67,8 +75,13 @@ inputs:
   ort_disable_scanner:
     description: |
       If 'true', ORT's scanner will not run (no copyright holders and licenses scan).
-    default: "true"
     required: false
+
+  ort_docker_image:
+    default: $ORT_CI_DOCKER_IMAGE
+    description: |
+      The CI Docker ORT Image to use.
+    required: true
 
   ort_log_level:
     description: |
@@ -78,41 +91,34 @@ inputs:
     default: "info"
     required: false
 
-  ort_use_dev_db:
+  ort_opts:
     description: |
-      If 'true', download/upload scanned results from/to development database."
-    default: "false"
+      Extra JVM Options for running ORT Binary.
+    default: ""
     required: false
 
   ort_url:
     default: https://github.com/oss-review-toolkit/ort.git
     description: |
-      Where to get the ORT code base.
+      The ORT code base.
     required: false
 
-  ort_docker_image:
-    default: $ORT_CI_DOCKER_IMAGE
+  ort_use_dev_db:
     description: |
-      The CI Docker ORT Image to use.
-    required: true
-
-  ort_config_file:
-    description: |
-      Path to repository configuration file relative to the VCS root.
-      If empty '.ort.yml' is used as default.
-    default: ".ort.yml"
+      If 'true', download/upload scanned results from/to development database."
     required: false
 
   project_dir:
     description: |
-      Path to actual cloned project folder in the CI-pipe. Defaults to 'project'.
+      Path to actual cloned project folder in the CI-pipe.
+      Defaults to 'project'.
     default: "project"
     required: false
 
   vcs_path:
     default: ""
     description: |
-      Leave this field empty unless one of the following special cases applies.
+      Leave empty unless one of the following special cases applies -
        project VCS_TYPE is git-repo - specify path to repo manifest file (e.g. olympia.xml, note VCS_URL must point to a manifest repository)
        you require sparse checkout - specify repository sub-path to download and scan (e.g. projects/gradle/, note sparse checkout is
        possible only for VCS_TYPE git, mercurial or subversion).
@@ -121,22 +127,25 @@ inputs:
   sw_name:
     description: |
       Name of project, product or component to be scanned.
-      By default the name of the repository is used as shown in its clone URL.
+      Defaults to the name of the repository is shown in its clone URL.
+      Only used if ORT_DISABLE_DOWNLOADER is set to false.
     default: ${{ github.event.repository.name }}
     required: false
 
   sw_version:
     description: |
-      Project version number or release name (use the version from package metadata, not VCS revision).By default, the Git short SHA is used.
-    default: ""
+      Project version number or release name (use the version from package metadata, not VCS revision).
+      Defaults to Git short SHA (7 char).
+      Only used if ORT_DISABLE_DOWNLOADER is set to false.
     required: false
 
   vcs_revision:
     description: |
       SHA1 or tag to scan (not branch names, because they can move).
       If VCS_TYPE is 'git-repo', SHA1 must be unabbreviated, tag names must be prefixed with 'refs/tags/'.
+      Defaults to Git SHA.
+      Only used if ORT_DISABLE_DOWNLOADER is set to false.
     required: false
-    default: $GITHUB_SHA
 
   vcs_type:
     description: |
@@ -147,9 +156,10 @@ inputs:
   vcs_url:
     description: |
       VCS URL (clone URL) of project to scan.
-    default: ""
     required: false
 
+  # ORT general CI logic repo settings
+  # ---------------------------------
   ort_ci_base_repo_uri:
     description: |
       URI to the ORT CI Base repo.
@@ -157,18 +167,12 @@ inputs:
     default: janderssonse/ort-ci-base
     required: true
 
-  ort_cli_config_tmpl:
+  ort_ci_base_branch:
     description: |
-      Path to a general ort configuration file in the repo.
-      Defaults to (ort-ci-action/ort-defaults/ort.conf).
-    default: "ort.conf.github.tmpl"
+      Script repo, branch name, dev help
+    default: main
     required: false
-
-  ort_opts:
-    description: |
-      Set general running options for ORT, for example xmx.
-    default: ""
-    required: false
+  # ---------------------------------
 
 runs:
   using: "composite"
