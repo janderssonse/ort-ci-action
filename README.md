@@ -6,14 +6,18 @@ SPDX-License-Identifier: CC0-1.0
 
 # ORT CI Action
 
-A GitHub Action for using the powerful [ORT (OSS Review Toolkit)](https://github.com/oss-review-toolkit/ort) to Analyse, Scan, Evaluate and Advise your code with ORT, with quite a lot of configuration options.
+A GitHub Action or a template for helping you using the powerful [ORT (OSS Review Toolkit)](https://github.com/oss-review-toolkit/ort) to Analyse, Scan, Evaluate and Advise your code with ORT, with quite a lot of configuration options.
 
-NOTE: TESTING THINGS; GIT HISTORY WILL BE RESET WHEN PROJECT IS "good enough" for an initial commit and pass the experimental phase, so if you clone it, don't expect to much, and don't use it "for real" yet, things will break
+As an SBOM (Software-Bill-Of-Materials)-generator it might just work for you right anyway, as ORT supports many package managers and output formats.
+
+As a deep code license scanner, you might need to configure more powerful runners.
 
 Related siblings projects are:
 
-- [ORT CI Base](https://github.com/janderssonse/ort-ci-base) - Base Scripts etc. for running ORT in CI
-- [ORT CI GitLab](https://github.com/janderssonse/ort-ci-gitlab) - A GitLab CI template for running ORT in CI
+- [ORT CI Base](https://github.com/janderssonse/ort-ci-base) - Containts base logic (scripts etc.) for running ORT in CI
+- [ORT CI GitLab](https://github.com/janderssonse/ort-ci-gitlab) - GitLab CI templates for running ORT in GitLab environments.
+- [ORT CI Tekton] - To-Do
+
 
 ## Table of Contents
 
@@ -24,14 +28,8 @@ Related siblings projects are:
 
 ## Usage
 
-In the given example we are using a few other actions:
 
-* [`checkout`](https://github.com/actions/checkout) - will checkout the current repo and put in under '$GITHUB_WORKSPACE/project' (the default expected repo location if nothing else configured).
-
-
-* [`upload-artifact`](https://github.com/actions/upload-artifact) - to make the analysed results become available after the CI pipeline has finished.
-
-### Analyse
+### Analyse and output reports with CI Action - SBOM and more
 
 ```yaml
 name: ORT CI Action
@@ -51,16 +49,16 @@ jobs:
 
       - name: ORT CI Action run
         id: ort-ci-action
-        uses: janderssonse/ort-ci-action@84fb404388a78fa8a2059470c6c38bec98c648f4
+        uses: YOUR_ORG/ort-ci-action@84fb404388a78fa8a2059470c6c38bec98c648f4
         with:
           ort_disable_scanner: true
           ort_disable_downloader: true
           ort_disable_evaluator: true
           ort_disable_advisor: false
-          ort_cli_config_tmpl: "ort.conf.tmpl"
+          ort_cli_config_tmpl: "ort.conf.github.tmpl"
           ort_config_file: ''
           ort_log_level: info
-          ort_opts: -Xmx5120m
+          ort_opts: -Xmx5120m //this is roughly current free GitHub runners level
         
        
       - name: ort-action-artifacts
@@ -72,11 +70,38 @@ jobs:
 
 For further configuration options, see [the variables configuration doc](https://github.com/janderssonse/ort-ci-base/blob/main/docs/variables.adoc) or, the [action.yml](action.yml) itself.
 
+In the given example we are using a few other actions:
+
+* [`checkout`](https://github.com/actions/checkout) - will checkout the current repo and put in under '$GITHUB_WORKSPACE/project' (the default expected repo location if nothing else configured).
+
+
+* [`upload-artifact`](https://github.com/actions/upload-artifact) - to make the analysed results become available after the CI pipeline has finished.
+
 ### Where can the results be found?
 
 At the bottom of the workflow summary page, there is a dedicated section for artifacts. Here's a screenshot of something you might see:
 
 <img src="https://user-images.githubusercontent.com/37870813/164996952-e1a6c353-fe52-4a43-a578-e9a9c3b1f861.png" width="700" height="300">
+
+## Requirements
+
+### Scenario: I want to scan my pipelines with the GitHub Action
+
+Currently there is *no* official ORT Image (it will most likely be in the future).
+So until that - clone this repo and build your own:
+
+1) See the ort-ci-action/.github/workflows/ort-image-build.yml for how to build or just use as is.2) In action.yml: replace uses: docker://ghcr.io/janderssonse/ort-ci-action:latest to your builded image.
+
+GitHub Actions does not support a private image here yet.
+
+### Scenario: I want to scan my pipelines with a regular Actions workflow yaml, maybe with a private image
+
+Currently there is no official ORT Image available (it will most likely be in the future).
+So until that - build your own:
+
+1) See the 'ort-ci-action/.github/workflows/ort-image-build.yml' for how to build or just use as is.
+
+2) Have a look at the example in the 'ci-templates/ort-scan-flow.yml' and adjust it under your own workflow.
 
 ## Development
 
@@ -95,7 +120,7 @@ Before commiting a PR, please have run with this linters to avoid red checks. If
 
 ## Contributing
 
-ORT CI Action follows the [Contributor Covenant](http://contributor-covenant.org/version/1/3/0/) Code of Conduct.  
+ORT CI Action follows the [Contributor Covenant](http://contributor-covenant.org) Code of Conduct.  
 Please also see the [Contributor Guide](docs/CONTRIBUTING.adoc)
 
 ## Maintainers
@@ -104,7 +129,7 @@ Please also see the [Contributor Guide](docs/CONTRIBUTING.adoc)
 
 ## License
 
-The Action is using ORT to run it's actions which is Apache Licensed and:
+The Action is using ORT to run it's actions, which is under Apache Licenses and:
 
 Copyright (C) 2020-2022 HERE Europe B.V.
 
